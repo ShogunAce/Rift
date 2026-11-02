@@ -1,0 +1,40 @@
+{
+  "label": "after",
+  "at": "2026-11-01T04:37:16.674Z",
+  "node": "v24.14.1",
+  "platform": "win32",
+  "database": "temporary file-backed SQLite WAL",
+  "votes": 2000,
+  "viewers": 1000,
+  "overlays": 16,
+  "concurrency": 48,
+  "errors": 0,
+  "throughputVotesPerSecond": 956.8,
+  "durationMs": 2090,
+  "httpLatencyMs": {
+    "p50": 47.28,
+    "p95": 61.56,
+    "p99": 70.25,
+    "max": 105.8463999999999
+  },
+  "websocketFrames": 1984,
+  "serverHeapMB": 41.6,
+  "serverRssMB": 170.5,
+  "eventLoop": {
+    "meanMs": 40.2754820338983,
+    "p95Ms": 60.489727,
+    "maxMs": 68.091903
+  },
+  "assertions": [
+    "exact latest-user tally",
+    "no state mutation before approval",
+    "32 closes produce one proposal",
+    "stale approval rejected",
+    "64 approvals produce one commit",
+    "all overlays converge with increasing sequences",
+    "32 rollbacks produce one compensation",
+    "64 invalid requests rejected",
+    "64 anonymous requests rejected"
+  ],
+  "totalMs": 3457
+}

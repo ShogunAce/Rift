@@ -1,0 +1,43 @@
+{
+  "label": "campaign-upgrade",
+  "at": "2026-11-02T19:59:25.849Z",
+  "node": "v24.14.1",
+  "platform": "win32",
+  "database": "temporary file-backed SQLite WAL",
+  "votes": 20000,
+  "viewers": 10000,
+  "overlays": 64,
+  "concurrency": 96,
+  "reconnectClients": 64,
+  "errors": 0,
+  "throughputVotesPerSecond": 1067.4,
+  "durationMs": 18738,
+  "httpLatencyMs": {
+    "p50": 88.3,
+    "p95": 105.92,
+    "p99": 119.46,
+    "max": 180.86259999999993
+  },
+  "websocketFrames": 13824,
+  "serverHeapMB": 96.2,
+  "serverRssMB": 296.3,
+  "eventLoop": {
+    "meanMs": 80.60964447457627,
+    "p95Ms": 104.464383,
+    "maxMs": 117.047295
+  },
+  "assertions": [
+    "exact latest-user tally",
+    "no state mutation before approval",
+    "32 closes produce one proposal",
+    "stale approval rejected",
+    "64 approvals produce one commit",
+    "all overlays converge with increasing sequences",
+    "32 rollbacks produce one compensation",
+    "64 invalid requests rejected",
+    "64 anonymous requests rejected",
+    "64 reconnecting overlays receive authoritative snapshots",
+    "invalid and oversized WebSocket messages disconnect without taking down server"
+  ],
+  "totalMs": 20077
+}
