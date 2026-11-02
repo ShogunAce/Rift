@@ -20,7 +20,8 @@ export function useRift(enabled: boolean, overlay = false) {
         ? await fetch('/api/overlay/bootstrap', {
             headers: { Authorization: 'Bearer ' + location.hash.slice(1) },
           }).then(async (r) => {
-            if (!r.ok) throw new Error('Invalid overlay link. Copy a fresh link from Settings.');
+            if (!r.ok)
+              throw new Error('This overlay link has expired. Copy a new one from Stream overlay.');
             return r.json();
           })
         : await api('/snapshot');

@@ -24,39 +24,39 @@ const steps = [
   {
     title: 'Chat votes',
     code: '!rift a   !rift b   !rift c',
-    body: 'Viewers vote with a chat command. One viewer holds one vote, and changing it replaces the old one. The server closes the round at its deadline, even if no browser is open.',
+    body: 'Viewers vote with a chat command. One viewer, one vote, and a new vote replaces the old one. Voting closes on time even if no browser is open.',
   },
   {
-    title: 'The engine prices it',
+    title: 'RIFT works out the cost',
     code: 'B = clamp(round(60 × (0.5 + H/200) + 5 × (L − 3) − E), 10, 100)',
-    body: 'Party health, level and active effects set a threat budget. The winning choice becomes the strongest variant that fits, so the same state always gets the same answer.',
+    body: 'Party health, level and active effects set a threat budget. The winning fate comes back as the strongest version that fits, and the same party always gets the same answer.',
   },
   {
-    title: 'You decide',
-    code: 'Unleash encounter   /   Reject',
-    body: 'Nothing has happened yet. You see the proposal and the sums behind it, then approve or reject. Audience input can never commit a change by itself.',
+    title: 'You make the call',
+    code: 'Unleash encounter  /  Reject',
+    body: 'Nothing has happened yet. You see the proposal and the sums behind it, then approve or reject it. Chat can never change the world by itself.',
   },
   {
     title: 'The stream changes',
     code: 'OBS browser source · 1280 × 720',
-    body: 'An approved encounter reaches your overlay in real time and lands in the ledger. Change your mind and roll back the latest approval. The record of it stays.',
+    body: 'An approved encounter tears open on your overlay and lands in the ledger. Change your mind and roll it back. The record stays.',
   },
 ];
 const promises = [
   {
     title: 'Bounded by rules',
-    body: 'Every outcome comes from a fixed list of legal tiers. Chat picks the direction, and the budget decides how hard it hits.',
+    body: 'Every outcome comes from a fixed list of encounters. Chat picks the direction, and your threat budget decides how hard it hits.',
   },
   {
     title: 'Nothing commits without you',
-    body: 'Proposals stay proposals until you approve them. Stale or repeated commands are refused instead of applied twice.',
+    body: 'A proposal stays a proposal until you approve it. Repeated or out-of-date commands are refused, never applied twice.',
   },
   {
     title: 'All of it on the record',
-    body: 'Votes, sums, approvals and rollbacks are kept in a local ledger, with rehearsal and live events labeled apart.',
+    body: 'Votes, sums, approvals and rollbacks stay in a local ledger, with rehearsal and live events labeled apart.',
   },
 ];
-const setup = ['npm ci', 'Copy-Item .env.example .env', 'npm run dev'];
+const setup = ['npm ci', 'npm run demo'];
 
 const prefersReduced = () =>
   typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -153,7 +153,9 @@ function TryRound({ highlighted, sound }: { highlighted: Choice | null; sound: b
             />
           )}
           <div className="lp-stage-copy">
-            <span>{phase === 'approved' ? 'The world has changed' : 'Encounter 01'}</span>
+            <span>
+              {phase === 'approved' ? 'The world has changed' : 'Encounter 01 / Ancient ruins'}
+            </span>
             <strong>{phase === 'approved' ? proposal?.name : 'The Ruined Temple'}</strong>
             <em>
               {phase === 'approved'
@@ -242,7 +244,7 @@ function TryRound({ highlighted, sound }: { highlighted: Choice | null; sound: b
         )}
         {phase === 'proposed' && proposal && (
           <div className="lp-proposal">
-            <span className="lp-tag">Proposal, not yet real</span>
+            <span className="lp-tag">Proposal: nothing has changed yet</span>
             <h3>{proposal.name}</h3>
             <p className="lp-variant">{proposal.variant}</p>
             <div className="lp-meter">
@@ -253,7 +255,7 @@ function TryRound({ highlighted, sound }: { highlighted: Choice | null; sound: b
               />
             </div>
             <p className="lp-meter-label">
-              Costs {proposal.cost} of {proposal.budget} available threat
+              Final cost {proposal.cost} of a {proposal.budget} threat budget
             </p>
             <code className="lp-sum">{proposal.explanation[2]}</code>
             <p className="lp-why">{proposal.explanation[3]}</p>
@@ -283,7 +285,7 @@ function TryRound({ highlighted, sound }: { highlighted: Choice | null; sound: b
         {phase === 'rejected' && (
           <div className="lp-result">
             <span className="lp-tag">Rejected</span>
-            <p>The stream never saw it, and the party is untouched. That is the deal.</p>
+            <p>Nothing changed. The stream never saw it, and the party is untouched.</p>
             <button className="lp-pill lp-pill-ghost" onClick={reset}>
               <RotateCcw size={17} />
               Run another round
@@ -472,7 +474,7 @@ export default function Landing() {
             <div className="lp-navpill">
               <a href="#how">How it works</a>
               <a href="#round">Try a round</a>
-              <a href="#control">Control</a>
+              <a href="#control">Control room</a>
               <a href="#run">Run it</a>
             </div>
             <button
@@ -493,8 +495,8 @@ export default function Landing() {
             <span className="lp-line lp-line-2">the world</span>
           </h1>
           <p className="lp-sub">
-            Your Twitch chat votes on what happens next. A rules engine turns the result into a
-            balanced encounter. You approve it, and the stream changes.
+            Your Twitch chat votes on what happens next. RIFT turns the result into a balanced
+            encounter. You make the final call, and the stream changes.
           </p>
           <div className="lp-ctas">
             <a className="lp-cta-main" href={APP_URL}>
@@ -554,11 +556,11 @@ export default function Landing() {
         <section className="lp-section lp-try" id="round">
           <div className="lp-try-head lp-reveal">
             <p className="lp-eyebrow">Try a round</p>
-            <h2>Be the streamer for thirty seconds.</h2>
+            <h2>Take the final call yourself.</h2>
             <p>
-              This is RIFT’s real encounter engine running in your browser. The viewers are
-              simulated and nothing connects to Twitch. Drop the party’s health and watch the same
-              vote come back gentler.
+              This is RIFT’s real encounter engine, running in your browser. The votes are simulated
+              and nothing connects to Twitch. Lower the party’s health and watch the same vote come
+              back gentler.
             </p>
           </div>
           <div className="lp-reveal">
@@ -595,7 +597,7 @@ export default function Landing() {
               loading="lazy"
             />
             <figcaption>
-              The control room and OBS overlay, captured from a rehearsal round.
+              The control room and stream overlay, captured from a rehearsal round.
             </figcaption>
           </figure>
         </section>
@@ -605,8 +607,9 @@ export default function Landing() {
             <p className="lp-eyebrow">Run it</p>
             <h2>It runs on your machine.</h2>
             <p className="lp-run-lede">
-              Node 24 is all it takes. There is no external database, no paid service and no API key
-              to get started. Rehearsal works without a Twitch account.
+              Node 24 is all it takes. There’s no external database, paid service or API key to get
+              started, and rehearsal runs without a Twitch account. The demo command prints the
+              address to open.
             </p>
             <CopySetup />
           </div>

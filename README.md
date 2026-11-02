@@ -6,7 +6,7 @@ A local-first Twitch encounter director. Viewers vote with `!rift a`, `!rift b`,
 
 ## Current status
 
-The complete local Ruined Temple loop is implemented and verified in rehearsal, including a separate real-time overlay. Twitch OAuth and EventSub are implemented and covered by mocked-provider protocol tests. **Real-account Twitch authorization, live chat delivery, and capture inside OBS remain unverified.** The owner chose to connect Twitch later. Rehearsal events are explicitly labeled synthetic. No submission or live demo claim is implied.
+The complete local Ruined Temple loop is implemented and verified in rehearsal, including a separate real-time overlay. Twitch OAuth and EventSub are implemented and covered by mocked-provider protocol tests. **Real-account Twitch authorization, live chat delivery, and capture inside OBS remain unverified.** The owner chose to connect Twitch later. Rehearsal votes are explicitly labeled simulated. No submission or live demo claim is implied.
 
 ## Quick start
 
@@ -14,17 +14,18 @@ Requires **Node.js 24+** (uses built-in `node:sqlite`) and npm. No OpenAI API ke
 
 ```powershell
 npm ci
-Copy-Item .env.example .env
-npm run dev
+npm run demo
 ```
 
-Open **http://localhost:5173/app** for the control room (use `localhost`, not `127.0.0.1`, to match the configured request origin). The landing page is at `/`.
+Open **http://localhost:5180/** for the landing page, or **http://localhost:5180/app** for the control room. `npm run demo` is a one-command rehearsal: a fresh in-memory world on its own ports. It ignores your `.env`, so it cannot touch a live server or its database. See [DEMO_SCRIPT.md](DEMO_SCRIPT.md) for a click-by-click run sheet.
+
+For development against your own `.env`, use `npm run dev` and open `APP_ORIGIN`. The server refuses control requests from any other address, so with the default settings use `http://localhost:5173`, not `127.0.0.1`.
 
 1. Click **Enter rehearsal**.
 2. Set the party level, health, and voting duration. Click **Start voting**.
-3. Send a synthetic vote with the rehearsal buttons. Change the viewer ID to simulate another viewer; reuse the ID to change that viewer's vote.
+3. Send a simulated vote with the rehearsal buttons. Change the viewer ID to simulate another viewer; reuse the ID to change that viewer's vote.
 4. Click **Close voting & calculate**, or wait for the server deadline.
-5. Inspect the calculation, then **Unleash encounter** or **Reject**.
+5. Open **See how RIFT worked it out**, then **Unleash encounter** or **Reject**.
 6. Open **Stream overlay**, copy its private URL, and open it in another browser window. Approved outcomes update without reloading.
 7. Use **Roll back** to compensate the most recent approval. Starting another round closes that rollback window.
 

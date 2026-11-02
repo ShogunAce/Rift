@@ -1,16 +1,24 @@
+import type { Round } from '../../../../packages/shared/src/contracts';
 import { useRift } from '../hooks/useRift';
 import { Scene, VoteBars } from '../components/Scene';
+const statusLabel: Record<Round['status'], string> = {
+  voting: 'VOTING OPEN',
+  proposed: 'VOTING CLOSED',
+  approved: 'UNLEASHED',
+  rejected: 'REJECTED',
+  cancelled: 'NO ENCOUNTER',
+};
 export default function Overlay() {
   const { snapshot, online, error } = useRift(true, true);
   return (
-    <main className="broadcast">
+    <main className="broadcast" data-status={snapshot?.round?.status ?? 'idle'}>
       <div className="broadcast-header">
         <span className="brand">
-          RIFT<span> / AUDIENCE DIRECTOR</span>
+          RIFT<span> / ENCOUNTER DIRECTOR</span>
         </span>
         <span className="badge">
           {snapshot?.mode === 'rehearsal'
-            ? 'REHEARSAL · SYNTHETIC VOTES'
+            ? 'REHEARSAL · SIMULATED VOTES'
             : snapshot?.connection.status === 'connected'
               ? 'TWITCH CONNECTED'
               : 'TWITCH DISCONNECTED'}
@@ -22,21 +30,21 @@ export default function Overlay() {
           {error}
         </p>
       )}
-      <Scene snapshot={snapshot} />
+      <Scene snapshot={snapshot} live />
       <div className="broadcast-bottom">
         <section>
           <div className="section-heading">
             <span>YOUR CHOICE. THEIR FATE.</span>
             <span>
-              {snapshot?.round?.status === 'voting'
-                ? 'VOTING OPEN'
-                : (snapshot?.round?.status?.toUpperCase() ?? 'AWAITING ENCOUNTER')}
+              {snapshot?.round?.status ? statusLabel[snapshot.round.status] : 'NEXT VOTE SOON'}
             </span>
           </div>
           <VoteBars snapshot={snapshot} />
         </section>
         <aside>
-          <div className="eyebrow">ROUND {String(snapshot?.state.round ?? 0).padStart(2, '0')}</div>
+          <div className="eyebrow">
+            ROUND {String(Math.max(1, snapshot?.state.round ?? 1)).padStart(2, '0')}
+          </div>
           <h2>
             {snapshot?.round?.status === 'approved'
               ? 'Encounter unleashed'
@@ -46,11 +54,11 @@ export default function Overlay() {
           </h2>
           <p>
             {snapshot?.round?.status === 'proposed'
-              ? 'The audience has spoken. Awaiting host approval.'
+              ? 'Chat has spoken. The final call is the keeper’s.'
               : snapshot?.round?.status === 'approved'
-                ? `${snapshot.round.proposal?.variant}. The keeper has approved this outcome.`
+                ? `${snapshot.round.proposal?.variant}. The keeper has approved it.`
                 : snapshot?.round?.status === 'voting'
-                  ? 'Cast your vote in Twitch chat using !rift a, !rift b, or !rift c.'
+                  ? 'Vote in chat with !rift a, !rift b or !rift c.'
                   : 'The next vote opens when the keeper starts a round.'}
           </p>
           <div className="threat-label">

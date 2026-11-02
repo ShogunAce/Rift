@@ -35,7 +35,7 @@ const envelope = z.object({
 export class EventSub {
   status = {
     status: 'disconnected',
-    detail: 'Connect your broadcaster account to receive live chat.',
+    detail: 'Connect your Twitch account to receive live chat.',
   };
   private sockets = new Set<WebSocket>();
   private stopped = true;

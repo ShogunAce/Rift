@@ -7,6 +7,7 @@
     "dev": "concurrently -k \"tsx watch apps/server/src/index.ts\" \"vite --host 127.0.0.1\"",
     "build": "tsc --noEmit && vite build",
     "start": "tsx apps/server/src/index.ts",
+    "demo": "node scripts/demo.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",

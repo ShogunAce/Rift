@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Activity,
   ArrowUpRight,
@@ -27,7 +27,7 @@ import {
   X,
 } from 'lucide-react';
 import { api, useRift } from '../hooks/useRift';
-import { Scene, VoteBars } from '../components/Scene';
+import { choiceArt, Scene, VoteBars } from '../components/Scene';
 type Me = {
   session: { mode: string; actor: string } | null;
   identity: { name: string } | null;
@@ -134,10 +134,10 @@ export default function ControlRoom() {
             <path d="M20 2 5 23h13L12 38 28 17H15Z" fill="currentColor" />
           </svg>
           <span>
-            RIFT<small>AUDIENCE DIRECTOR</small>
+            RIFT<small>ENCOUNTER DIRECTOR</small>
           </span>
         </a>
-        <div className="workspace-label">WORKSPACE</div>
+        <div className="workspace-label">THE REALM</div>
         <nav>
           {[
             { id: 'control', icon: LayoutDashboard, label: 'Control room' },
@@ -172,9 +172,7 @@ export default function ControlRoom() {
           <span className="avatar">{me?.identity?.name.slice(0, 2).toUpperCase() ?? 'RK'}</span>
           <div>
             {me?.identity?.name ?? 'Realm keeper'}
-            <small>
-              {signed ? (rehearsal ? 'Rehearsal workspace' : 'Broadcaster') : 'Not connected'}
-            </small>
+            <small>{signed ? (rehearsal ? 'Rehearsal' : 'Live on Twitch') : 'Not connected'}</small>
           </div>
           {signed && (
             <button
@@ -190,7 +188,7 @@ export default function ControlRoom() {
       <div className="main-shell">
         <header className="topbar">
           <div className="breadcrumb">
-            Workspace <ChevronRight size={14} />
+            The realm <ChevronRight size={14} />
             <strong>
               {page === 'control'
                 ? 'Control room'
@@ -216,7 +214,7 @@ export default function ControlRoom() {
             <span className="action-status" role="status">
               {busy ? 'Saving your changes…' : !me ? 'Connecting to RIFT…' : ''}
             </span>
-            <div className="eyebrow">THE AUDIENCE CONTROLS THE WORLD. YOU HOLD THE REINS.</div>
+            <div className="eyebrow">CHAT GETS THE VOTE. YOU KEEP THE VETO.</div>
             <div className="heading-row">
               <div>
                 <h1>
@@ -232,10 +230,10 @@ export default function ControlRoom() {
                   {page === 'control'
                     ? 'Set the scene. Let chat shape the encounter.'
                     : page === 'overlay'
-                      ? 'Your audience’s decisions, brought to life on stream.'
+                      ? 'What your viewers see, live on stream.'
                       : page === 'ledger'
-                        ? 'Every choice, calculation, and consequence. Accounted for.'
-                        : 'Connect your broadcaster account and prepare your stream.'}
+                        ? 'Every vote, sum and decision, on the record.'
+                        : 'Connect your Twitch account and get your stream ready.'}
                 </p>
               </div>
               <button
@@ -254,36 +252,40 @@ export default function ControlRoom() {
             <div className="error" role="alert">
               <WifiOff size={18} />
               {error || syncError}
-              <button aria-label="Dismiss error" onClick={() => setError('')}>
-                <X size={16} />
-              </button>
+              {error && (
+                <button aria-label="Dismiss error" onClick={() => setError('')}>
+                  <X size={16} />
+                </button>
+              )}
             </div>
           )}
           {signed && !online && (
-            <div className="notice">
-              Connecting to the authoritative server. Displayed values may be stale.
-            </div>
+            <div className="notice">Reconnecting to RIFT. What you see may be out of date.</div>
           )}
-          {!signed && (
+          {!signed && page !== 'settings' && (
             <div className="welcome-strip">
               <div>
                 <Radio size={23} />
                 <div>
                   <strong>Your next encounter starts here.</strong>
                   <p>
-                    Connect Twitch to let your audience in, or explore the full flow in rehearsal.
+                    {me?.rehearsalAvailable === false
+                      ? 'Connect Twitch to let your chat in.'
+                      : 'Connect Twitch to let your chat in, or run a full round in rehearsal with simulated votes.'}
                   </p>
                 </div>
               </div>
               <div className="button-group">
-                <button
-                  className="secondary"
-                  disabled={!me?.rehearsalAvailable || busy}
-                  onClick={() => action('/auth/rehearsal')}
-                >
-                  <FlaskConical size={16} />
-                  Enter rehearsal
-                </button>
+                {me?.rehearsalAvailable !== false && (
+                  <button
+                    className="secondary"
+                    disabled={!me || busy}
+                    onClick={() => action('/auth/rehearsal')}
+                  >
+                    <FlaskConical size={16} />
+                    Enter rehearsal
+                  </button>
+                )}
                 <button
                   className="primary"
                   onClick={() =>
@@ -308,7 +310,7 @@ export default function ControlRoom() {
                         Ruined Temple
                       </span>
                       <span>
-                        ENCOUNTER TEMPLATE <Check size={13} />
+                        ENCOUNTER LOADED <Check size={13} />
                       </span>
                     </div>
                   </div>
@@ -338,7 +340,9 @@ export default function ControlRoom() {
                             max="20"
                             value={level}
                             disabled={active}
-                            onChange={(e) => setLevel(Number(e.target.value))}
+                            onChange={(e) =>
+                              setLevel(Math.min(20, Math.max(1, Number(e.target.value) || 1)))
+                            }
                           />
                           <button
                             disabled={active}
@@ -357,6 +361,8 @@ export default function ControlRoom() {
                         </span>
                         <input
                           aria-label="Party health"
+                          data-tone={health <= 25 ? 'low' : health <= 50 ? 'mid' : 'high'}
+                          style={{ '--hp': `${health}%` } as React.CSSProperties}
                           type="range"
                           min="0"
                           max="100"
@@ -366,29 +372,29 @@ export default function ControlRoom() {
                         />
                         <div className="range-label">
                           <Heart size={12} />
-                          Remaining resources
+                          Lower health, gentler encounters
                         </div>
                       </label>
                     </div>
                     <div className="party-footer">
                       <ShieldCheck size={14} />
-                      Encounters adapt to your party’s condition.
+                      Your threat budget follows the party’s condition.
                     </div>
                   </section>
                   <section className="panel threat-panel">
                     <div className="section-heading">
                       <span>
                         <Activity size={16} />
-                        COMMITTED THREAT
+                        THREAT
                       </span>
-                      <span>REV {s?.state.revision ?? 0}</span>
+                      <span>REVISION {s?.state.revision ?? 0}</span>
                     </div>
                     <div className="threat-number">
                       {s?.state.threat ?? 0}
                       <span>/ {s?.state.maxThreat ?? 60}</span>
-                      <small>{s?.state.threat ? 'ENCOUNTER ACTIVE' : 'AWAITING APPROVAL'}</small>
+                      <small>{s?.state.threat ? 'ENCOUNTER ACTIVE' : 'ALL QUIET'}</small>
                     </div>
-                    <div className="meter">
+                    <div className={`meter ${s?.state.threat ? 'is-active' : ''}`}>
                       <i
                         style={{
                           transform: `scaleX(${s ? s.state.threat / s.state.maxThreat : 0})`,
@@ -403,7 +409,7 @@ export default function ControlRoom() {
                   </section>
                 </section>
                 <section className="workflow-column">
-                  <section className="panel voting-panel">
+                  <section className={`panel voting-panel ${voting ? 'is-live' : ''}`}>
                     <div className="section-heading">
                       <span>
                         <Radio size={16} />
@@ -422,31 +428,33 @@ export default function ControlRoom() {
                     <div className="round-summary">
                       <div>
                         <span className="eyebrow">
-                          ROUND {String(s?.state.round ?? 1).padStart(2, '0')}
+                          ROUND {String(Math.max(1, s?.state.round ?? 1)).padStart(2, '0')}
                         </span>
                         <h2>What wakes beneath?</h2>
                       </div>
-                      <div className="timer">
+                      <div className={`timer ${voting && seconds <= 10 ? 'is-urgent' : ''}`}>
                         <Clock size={16} />
                         {voting
                           ? `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`
                           : '—:—'}
                       </div>
                     </div>
-                    <p className="section-copy">Three possibilities. One community decision.</p>
+                    <p className="section-copy">Three fates. One vote from chat.</p>
                     <VoteBars snapshot={s} />
                     <div className="vote-footer">
                       <span>
                         <Volume2 size={14} />
-                        <strong>{total}</strong> {rehearsal ? 'rehearsal' : 'audience'} votes
+                        <strong>{total}</strong> {rehearsal ? 'simulated votes' : 'votes from chat'}
                       </span>
-                      {r && signed ? (
+                      {active && signed ? (
                         <button
                           className="reset-voting"
                           disabled={busy || !online}
-                          title="Clear votes and any pending proposal. Restart the same voting window; committed effects stay unchanged."
+                          title="Clear the votes and any proposal, then restart the voting window. Nothing already approved changes."
                           onClick={() =>
-                            action(`/rounds/${r.id}/reset`, { expectedRevision: s!.state.revision })
+                            action(`/rounds/${r!.id}/reset`, {
+                              expectedRevision: s!.state.revision,
+                            })
                           }
                         >
                           <RotateCcw size={14} />
@@ -504,21 +512,25 @@ export default function ControlRoom() {
                     <div className="section-heading">
                       <span>
                         <Swords size={16} />
-                        ENCOUNTER DIRECTOR
+                        YOUR DECISION
                       </span>
                       <span>
                         {pending
-                          ? 'YOUR APPROVAL REQUIRED'
+                          ? 'NEEDS YOUR CALL'
                           : r?.status === 'approved'
-                            ? 'COMMITTED'
-                            : 'HOST CONTROL'}
+                            ? 'APPROVED'
+                            : 'NOTHING PENDING'}
                       </span>
                     </div>
                     {p ? (
                       <>
                         <div className="proposal-title">
                           <div className="proposal-icon">
-                            <Shield size={24} />
+                            {p.effect ? (
+                              <img src={choiceArt[p.choice]} alt="" />
+                            ) : (
+                              <Shield size={24} />
+                            )}
                           </div>
                           <div>
                             <h2>{p.name}</h2>
@@ -527,22 +539,22 @@ export default function ControlRoom() {
                         </div>
                         <div className="budget-breakdown">
                           <div>
-                            <span>Base cost</span>
+                            <span>Full cost</span>
                             <strong>{p.baseCost}</strong>
                           </div>
                           <ChevronRight size={15} />
                           <div>
-                            <span>Available</span>
+                            <span>Threat budget</span>
                             <strong>{p.budget}</strong>
                           </div>
                           <ChevronRight size={15} />
                           <div>
-                            <span>Applied cost</span>
+                            <span>Final cost</span>
                             <strong className="copper">{p.cost}</strong>
                           </div>
                         </div>
                         <details>
-                          <summary>Inspect the balancing calculation</summary>
+                          <summary>See how RIFT worked it out</summary>
                           {p.explanation.map((line) => (
                             <p key={line}>{line}</p>
                           ))}
@@ -580,7 +592,7 @@ export default function ControlRoom() {
                               ? 'Encounter rolled back'
                               : p.status === 'approved'
                                 ? 'Approved. The world has changed.'
-                                : 'Rejected. Game state preserved.'}
+                                : 'Rejected. Nothing changed.'}
                           </div>
                         )}
                       </>
@@ -589,17 +601,26 @@ export default function ControlRoom() {
                         <div className="director-orbit">
                           <Swords size={26} />
                         </div>
-                        <h3>The next chapter is unwritten.</h3>
-                        <p>
-                          Close an audience vote to receive a balanced encounter.
-                          <br />
-                          Nothing changes until you approve.
-                        </p>
+                        {r?.status === 'cancelled' ? (
+                          <>
+                            <h3>No votes, no encounter.</h3>
+                            <p>Nothing changed. Start another round when you’re ready.</p>
+                          </>
+                        ) : (
+                          <>
+                            <h3>The next chapter is unwritten.</h3>
+                            <p>
+                              Close the vote to get a balanced encounter.
+                              <br />
+                              Nothing changes until you approve it.
+                            </p>
+                          </>
+                        )}
                       </div>
                     )}
                     <div className="director-footer">
                       <ShieldCheck size={14} />
-                      Deterministic rules. Always your decision.
+                      Fixed rules. Always your call.
                       {s?.canRollback && (
                         <button
                           disabled={busy || !online}
@@ -621,7 +642,7 @@ export default function ControlRoom() {
                     <FlaskConical size={19} />
                     <div>
                       <strong>Rehearsal controls</strong>
-                      <p>Synthetic input only. These are never represented as Twitch events.</p>
+                      <p>Simulated votes only. They never count as Twitch events.</p>
                     </div>
                   </div>
                   <label>
@@ -650,7 +671,7 @@ export default function ControlRoom() {
                 <div className="section-heading">
                   <span>
                     <ScrollText size={16} />
-                    LATEST EVIDENCE
+                    LATEST FROM THE LEDGER
                   </span>
                   <button onClick={() => setPage('ledger')}>
                     View full ledger <ArrowUpRight size={14} />
@@ -667,7 +688,7 @@ export default function ControlRoom() {
                   ))
                 ) : (
                   <p className="empty-ledger">
-                    Your first round will start the story. Its evidence will appear here.
+                    Your first round starts the story. Every step of it will appear here.
                   </p>
                 )}
               </section>
@@ -684,8 +705,8 @@ export default function ControlRoom() {
                 </div>
                 <h2>Invite your audience into the world.</h2>
                 <p>
-                  RIFT reads your broadcaster’s chat through Twitch EventSub. Your access token
-                  stays on the server.
+                  RIFT reads your chat through Twitch EventSub. Your access token stays on the
+                  server.
                 </p>
                 <div className="connection-box">
                   <span
@@ -693,7 +714,7 @@ export default function ControlRoom() {
                   />
                   <div>
                     <strong>{s?.connection.status ?? 'Disconnected'}</strong>
-                    <p>{s?.connection.detail ?? 'No broadcaster account connected.'}</p>
+                    <p>{s?.connection.detail ?? 'No Twitch account connected.'}</p>
                   </div>
                 </div>
                 {!me?.configured && (
@@ -783,7 +804,7 @@ export default function ControlRoom() {
                     SESSION & TRUST
                   </span>
                 </div>
-                <h2>The keeper has the final say.</h2>
+                <h2>You have the final call.</h2>
                 <ul className="trust-list">
                   <li>
                     <Check />
@@ -811,8 +832,8 @@ export default function ControlRoom() {
                   </li>
                 </ul>
                 <p className="muted">
-                  RIFT uses an original encounter-scoring heuristic, not official tabletop rules.
-                  Live Twitch verification requires a real connected account.
+                  RIFT uses its own encounter-scoring rules, not official tabletop rules. Live votes
+                  need a connected Twitch account.
                 </p>
               </section>
             </div>
@@ -825,17 +846,17 @@ export default function ControlRoom() {
                     <Eye size={17} />
                     BROADCAST PREVIEW
                   </span>
-                  <span>{rehearsal ? 'REHEARSAL' : 'PREVIEW'}</span>
+                  <span>{rehearsal ? 'REHEARSAL' : 'LIVE'}</span>
                 </div>
-                <Scene snapshot={s} />
+                <Scene snapshot={s} live />
                 <div className="preview-votes">
                   <VoteBars snapshot={s} />
                 </div>
               </div>
               <section className="panel settings-panel">
                 <div className="eyebrow">OBS BROWSER SOURCE</div>
-                <h2>A window into your world.</h2>
-                <p>Add RIFT to your broadcast in three steps.</p>
+                <h2>Put the realm on stream.</h2>
+                <p>Three steps in OBS.</p>
                 <ol className="obs-steps">
                   <li>
                     In OBS, add a <strong>Browser</strong> source.
@@ -854,6 +875,7 @@ export default function ControlRoom() {
                       try {
                         await navigator.clipboard.writeText(url);
                         setCopied(true);
+                        setTimeout(() => setCopied(false), 2200);
                       } catch {
                         setCopied(false);
                       }
@@ -866,7 +888,7 @@ export default function ControlRoom() {
                 {overlay && (
                   <>
                     <label className="overlay-url">
-                      Private read-only URL
+                      Your private overlay URL
                       <input readOnly value={overlay} onFocus={(e) => e.target.select()} />
                     </label>
                     <a className="secondary full" href={overlay} target="_blank" rel="noreferrer">
@@ -877,8 +899,8 @@ export default function ControlRoom() {
                 )}
                 <p className="muted">
                   <ShieldCheck size={14} />
-                  This URL grants view-only access. Keep it private. The overlay reconnects
-                  automatically.
+                  This link can only view, never control. Keep it off stream. The overlay reconnects
+                  by itself.
                 </p>
               </section>
             </div>
@@ -888,7 +910,7 @@ export default function ControlRoom() {
               <div className="section-heading">
                 <span>
                   <ScrollText size={17} />
-                  APPEND-ONLY EVENT HISTORY
+                  EVERY EVENT, IN ORDER
                 </span>
                 <span>LATEST {s?.events.length ?? 0} EVENTS</span>
               </div>
@@ -908,7 +930,7 @@ export default function ControlRoom() {
                 <div className="director-empty">
                   <ScrollText size={30} />
                   <h3>No events yet.</h3>
-                  <p>Start a round to record votes, proposals, and decisions.</p>
+                  <p>Start a round and every vote, sum and decision will appear here.</p>
                 </div>
               )}
             </section>
@@ -921,8 +943,8 @@ export default function ControlRoom() {
               <ShieldCheck size={12} />{' '}
               {signed
                 ? rehearsal
-                  ? 'REHEARSAL · NO LIVE TWITCH EVIDENCE'
-                  : 'BROADCASTER SESSION'
+                  ? 'REHEARSAL · SIMULATED VOTES ONLY'
+                  : 'LIVE ON TWITCH'
                 : 'LOCAL-FIRST ENCOUNTER ENGINE'}
             </span>
           </footer>
